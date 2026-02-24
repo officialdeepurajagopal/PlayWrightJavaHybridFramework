@@ -32,4 +32,10 @@ public class APITest extends BaseTest {
         Assert.assertFalse(books.isEmpty(), "Books list should not be empty");
         Assert.assertEquals(books.get(0).getBook_name(), "DeepTest9000");
     }
+
+    @Test(groups = {"apitest"})
+    public void getBookByAuthor(){
+        Response response = client.get("/Library/GetBook.php?AuthorName=John foer");
+        System.out.println("API Response: " + response.asString());
+    }
 }

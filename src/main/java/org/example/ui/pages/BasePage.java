@@ -27,6 +27,7 @@ public class BasePage {
     }
 
     public static boolean validateElementVisible(String locator) {
+        page.waitForSelector(locator);
         return getElement(locator).isVisible();
     }
 
