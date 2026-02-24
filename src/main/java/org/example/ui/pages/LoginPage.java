@@ -33,6 +33,11 @@ public class LoginPage extends BasePage {
         log.info("Clicked on login button");
     }
 
+    public void clickRegisterLink(){
+        clickElement("//a[contains(text(),'Register here')]");
+        log.info("Clicked on register link");
+    }
+
     public boolean isLoginSuccessful(){
         return validateElementVisible("//button[contains(text(), 'Sign Out')]");
     }

@@ -7,7 +7,6 @@ import com.microsoft.playwright.Page;
 import com.microsoft.playwright.Playwright;
 import org.example.ApiService.ApiClient;
 import org.example.utils.ConfigLoader;
-import org.testng.ITestContext;
 import org.testng.annotations.*;
 
 import java.lang.reflect.Method;
@@ -29,40 +28,22 @@ public class BaseTest {
     }
 
     @BeforeClass(alwaysRun = true)
-    public void setUpTest(ITestContext context) {
-        // Check groups from test methods in the class to determine test type
+    public void setUpTest() {
+        // Determine test type by inspecting @Test group annotations on the actual subclass
         boolean isApiTest = false;
         boolean isUiTest = false;
 
-        // First check if groups are specified in the context (from -Dgroups parameter)
-        String[] includedGroups = context.getIncludedGroups();
-
-        if (includedGroups != null && includedGroups.length > 0) {
-            for (String group : includedGroups) {
-                if ("apitest".equals(group)) {
+        Method[] methods = this.getClass().getDeclaredMethods();
+        for (Method method : methods) {
+            Test testAnnotation = method.getAnnotation(Test.class);
+            if (testAnnotation != null && testAnnotation.groups() != null) {
+                String[] groups = testAnnotation.groups();
+                if (Arrays.asList(groups).contains("apitest")) {
                     isApiTest = true;
                     break;
-                } else if ("uitest".equals(group)) {
+                } else if (Arrays.asList(groups).contains("uitest")) {
                     isUiTest = true;
                     break;
-                }
-            }
-        }
-
-        // If no groups from context, check the test methods in the class for group annotations
-        if (!isApiTest && !isUiTest) {
-            Method[] methods = this.getClass().getDeclaredMethods();
-            for (Method method : methods) {
-                Test testAnnotation = method.getAnnotation(Test.class);
-                if (testAnnotation != null && testAnnotation.groups() != null) {
-                    String[] groups = testAnnotation.groups();
-                    if (Arrays.asList(groups).contains("apitest")) {
-                        isApiTest = true;
-                        break;
-                    } else if (Arrays.asList(groups).contains("uitest")) {
-                        isUiTest = true;
-                        break;
-                    }
                 }
             }
         }
@@ -78,18 +59,28 @@ public class BaseTest {
                     .setHeadless(false)
                     .setSlowMo(1000);  // Slow down by 1 second to see actions
             browser = playwright.webkit().launch(options);
-            page = browser.newPage();
             urlToLaunch = ConfigLoader.get("appUrl");
             System.out.println("Loaded urlToLaunch: " + urlToLaunch);
         }
     }
 
+    @BeforeMethod(alwaysRun = true)
+    public void openNewPage() {
+        if (browser != null) {
+            page = browser.newPage();
+        }
+    }
+
+    @AfterMethod(alwaysRun = true)
+    public void closePage() {
+        if (page != null) {
+            page.close();
+            page = null;
+        }
+    }
 
     @AfterClass(alwaysRun = true)
     public void tearDownUI() {
-        if (page != null) {
-            page.close();
-        }
         if (browser != null) {
             browser.close();
         }
@@ -98,4 +89,3 @@ public class BaseTest {
         }
     }
 }
-
