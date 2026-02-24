@@ -42,11 +42,6 @@ pipeline {
     // ──────────────────────────────────────────────
     environment {
         ALLURE_RESULTS_DIR = 'allure-results'
-        // Inject credentials stored in Jenkins Credential Manager.
-        // Create two "Secret text" credentials with IDs below and
-        // they will be available as env vars inside the Test stage.
-        APP_USERNAME = credentials('APP_USERNAME')
-        APP_PASSWORD = credentials('APP_PASSWORD')
     }
 
     // ──────────────────────────────────────────────
@@ -95,9 +90,7 @@ pipeline {
                         -Dbrowser=${params.BROWSER} \
                         -Dheadless=${params.HEADLESS} \
                         -Dslowmo=0 \
-                        -Dgroups="${params.GROUPS}" \
-                        -Dusername=${APP_USERNAME} \
-                        -Dpassword=${APP_PASSWORD}
+                        -Dgroups="${params.GROUPS}"
                 """
             }
         }
@@ -108,19 +101,21 @@ pipeline {
     // ──────────────────────────────────────────────
     post {
         always {
-            echo "Archiving test artifacts..."
+            node(null) {
+                echo "Archiving test artifacts..."
 
-            // Archive raw Allure results and Surefire XML reports
-            archiveArtifacts artifacts: 'allure-results/**', allowEmptyArchive: true
-            archiveArtifacts artifacts: 'target/surefire-reports/**', allowEmptyArchive: true
+                // Archive raw Allure results and Surefire XML reports
+                archiveArtifacts artifacts: 'allure-results/**', allowEmptyArchive: true
+                archiveArtifacts artifacts: 'target/surefire-reports/**', allowEmptyArchive: true
 
-            // Generate and publish the Allure HTML report
-            // Requires the "Allure Jenkins Plugin" to be installed
-            allure([
-                includeProperties: false,
-                jdk              : '',
-                results          : [[path: "${ALLURE_RESULTS_DIR}"]]
-            ])
+                // Generate and publish the Allure HTML report
+                // Requires the "Allure Jenkins Plugin" to be installed
+                allure([
+                    includeProperties: false,
+                    jdk              : '',
+                    results          : [[path: "${ALLURE_RESULTS_DIR}"]]
+                ])
+            }
         }
 
         success {
