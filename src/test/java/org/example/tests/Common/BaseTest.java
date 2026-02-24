@@ -55,10 +55,23 @@ public class BaseTest {
             client = new ApiClient(apiBaseUrl);
         } else if (isUiTest) {
             playwright = Playwright.create();
+            boolean headless = Boolean.parseBoolean(System.getProperty("headless", "false"));
+            double slowMo = Double.parseDouble(System.getProperty("slowMo", headless ? "0" : "1000"));
             BrowserType.LaunchOptions options = new BrowserType.LaunchOptions()
-                    .setHeadless(false)
-                    .setSlowMo(1000);  // Slow down by 1 second to see actions
-            browser = playwright.webkit().launch(options);
+                    .setHeadless(headless)
+                    .setSlowMo(slowMo);
+            String browserName = System.getProperty("browser", "chromium").toLowerCase();
+            switch (browserName) {
+                case "firefox":
+                    browser = playwright.firefox().launch(options);
+                    break;
+                case "webkit":
+                    browser = playwright.webkit().launch(options);
+                    break;
+                default:
+                    browser = playwright.chromium().launch(options);
+                    break;
+            }
             urlToLaunch = ConfigLoader.get("appUrl");
             System.out.println("Loaded urlToLaunch: " + urlToLaunch);
         }

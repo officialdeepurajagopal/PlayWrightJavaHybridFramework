@@ -12,6 +12,12 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <!-- CI/CD overridable defaults -->
+        <env>dev</env>
+        <headless>false</headless>
+        <browser>chromium</browser>
+        <slowMo>1000</slowMo>
+        <groups>uitest,apitest</groups>
     </properties>
 
     <dependencies>
@@ -65,6 +71,12 @@
                         <suiteXmlFile>src/test/resources/testng.xml</suiteXmlFile>
                     </suiteXmlFiles>
                     <groups>${groups}</groups>
+                    <systemPropertyVariables>
+                        <env>${env}</env>
+                        <headless>${headless}</headless>
+                        <browser>${browser}</browser>
+                        <slowMo>${slowMo}</slowMo>
+                    </systemPropertyVariables>
                 </configuration>
             </plugin>
             <!-- Allure Maven Plugin for report generation -->
