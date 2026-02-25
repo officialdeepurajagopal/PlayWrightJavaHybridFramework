@@ -41,9 +41,7 @@ pipeline {
     // Pipeline-level environment variables
     // ──────────────────────────────────────────────
     environment {
-        ALLURE_RESULTS_DIR      = 'allure-results'
-        // Point Playwright to the macOS browser cache (avoids re-downloading / OS mismatch)
-        PLAYWRIGHT_BROWSERS_PATH = '/Users/deepurajagopal/Library/Caches/ms-playwright'
+        ALLURE_RESULTS_DIR       = 'allure-results'
     }
 
     // ──────────────────────────────────────────────
@@ -71,10 +69,12 @@ pipeline {
 
         stage('Install Playwright Browsers') {
             steps {
-                echo "Installing Playwright browser binaries..."
-                // PLAYWRIGHT_BROWSERS_PATH is set at pipeline level to use the macOS cache.
-                // This avoids OS mismatch warnings and re-downloading browsers.
+                echo "Verifying Playwright browser binaries..."
+                // Use $HOME from the Jenkins shell environment to locate the macOS browser cache.
+                // This avoids hardcoded paths and permission errors.
                 sh """
+                    export PLAYWRIGHT_BROWSERS_PATH="\$HOME/Library/Caches/ms-playwright"
+                    echo "PLAYWRIGHT_BROWSERS_PATH=\$PLAYWRIGHT_BROWSERS_PATH"
                     mvn exec:java \
                         -e \
                         -Dexec.mainClass=com.microsoft.playwright.CLI \
@@ -87,6 +87,7 @@ pipeline {
             steps {
                 echo "Running tests on env=${params.ENV}, browser=${params.BROWSER}, headless=${params.HEADLESS}, groups=${params.GROUPS}..."
                 sh """
+                    export PLAYWRIGHT_BROWSERS_PATH="\$HOME/Library/Caches/ms-playwright"
                     mvn test \
                         -Denv=${params.ENV} \
                         -Dbrowser=${params.BROWSER} \
