@@ -41,7 +41,9 @@ pipeline {
     // Pipeline-level environment variables
     // ──────────────────────────────────────────────
     environment {
-        ALLURE_RESULTS_DIR = 'allure-results'
+        ALLURE_RESULTS_DIR      = 'allure-results'
+        // Point Playwright to the macOS browser cache (avoids re-downloading / OS mismatch)
+        PLAYWRIGHT_BROWSERS_PATH = '/Users/deepurajagopal/Library/Caches/ms-playwright'
     }
 
     // ──────────────────────────────────────────────
@@ -70,7 +72,8 @@ pipeline {
         stage('Install Playwright Browsers') {
             steps {
                 echo "Installing Playwright browser binaries..."
-                // --with-deps requires root on Linux; skip it on macOS (deps are pre-installed).
+                // PLAYWRIGHT_BROWSERS_PATH is set at pipeline level to use the macOS cache.
+                // This avoids OS mismatch warnings and re-downloading browsers.
                 sh """
                     mvn exec:java \
                         -e \
