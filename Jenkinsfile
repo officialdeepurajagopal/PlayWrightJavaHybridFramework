@@ -67,13 +67,28 @@ pipeline {
             }
         }
 
+        stage('Install Playwright OS Dependencies') {
+            steps {
+                echo "Installing Playwright system-level OS dependencies..."
+                // 'install-deps' installs the native OS libraries (libnss3, libglib2.0, etc.)
+                // that the browser binaries require.  sudo is needed on Linux agents;
+                // on macOS the step is a no-op so it is safe to run unconditionally.
+                sh """
+                    sudo mvn exec:java \
+                        -e \
+                        -Dexec.mainClass=com.microsoft.playwright.CLI \
+                        -Dexec.args="install-deps ${params.BROWSER}"
+                """
+            }
+        }
+
         stage('Install Playwright Browsers') {
             steps {
                 echo "Verifying Playwright browser binaries..."
-                // Use $HOME from the Jenkins shell environment to locate the macOS browser cache.
+                // Use $HOME from the Jenkins shell environment to locate the browser cache.
                 // This avoids hardcoded paths and permission errors.
                 sh """
-                    export PLAYWRIGHT_BROWSERS_PATH="\$HOME/Library/Caches/ms-playwright"
+                    export PLAYWRIGHT_BROWSERS_PATH="\$HOME/ms-playwright"
                     echo "PLAYWRIGHT_BROWSERS_PATH=\$PLAYWRIGHT_BROWSERS_PATH"
                     mvn exec:java \
                         -e \
@@ -87,7 +102,7 @@ pipeline {
             steps {
                 echo "Running tests on env=${params.ENV}, browser=${params.BROWSER}, headless=${params.HEADLESS}, groups=${params.GROUPS}..."
                 sh """
-                    export PLAYWRIGHT_BROWSERS_PATH="\$HOME/Library/Caches/ms-playwright"
+                    export PLAYWRIGHT_BROWSERS_PATH="\$HOME/ms-playwright"
                     mvn test \
                         -Denv=${params.ENV} \
                         -Dbrowser=${params.BROWSER} \
