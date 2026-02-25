@@ -67,46 +67,13 @@ pipeline {
             }
         }
 
-        stage('Install Playwright OS Dependencies') {
-            steps {
-                echo "Installing Playwright system-level OS dependencies via apt-get..."
-                // Playwright's built-in 'install-deps' internally calls 'su' which fails in
-                // Docker containers where the jenkins user is not root.
-                // Instead, we install the required native libraries directly with apt-get.
-                // The Jenkins Docker image already runs as root, so no sudo is needed.
-                sh """
-                    apt-get update -qq && apt-get install -y --no-install-recommends \
-                        libnss3 \
-                        libnspr4 \
-                        libatk1.0-0 \
-                        libatk-bridge2.0-0 \
-                        libcups2 \
-                        libdrm2 \
-                        libdbus-1-3 \
-                        libxkbcommon0 \
-                        libxcomposite1 \
-                        libxdamage1 \
-                        libxfixes3 \
-                        libxrandr2 \
-                        libgbm1 \
-                        libasound2 \
-                        libpango-1.0-0 \
-                        libcairo2 \
-                        libxshmfence1 \
-                        fonts-liberation \
-                        libvulkan1 \
-                        xdg-utils
-                """
-            }
-        }
-
         stage('Install Playwright Browsers') {
             steps {
                 echo "Verifying Playwright browser binaries..."
-                // Use $HOME from the Jenkins shell environment to locate the browser cache.
+                // Use $HOME from the Jenkins shell environment to locate the macOS browser cache.
                 // This avoids hardcoded paths and permission errors.
                 sh """
-                    export PLAYWRIGHT_BROWSERS_PATH="\$HOME/ms-playwright"
+                    export PLAYWRIGHT_BROWSERS_PATH="\$HOME/Library/Caches/ms-playwright"
                     echo "PLAYWRIGHT_BROWSERS_PATH=\$PLAYWRIGHT_BROWSERS_PATH"
                     mvn exec:java \
                         -e \
@@ -120,7 +87,7 @@ pipeline {
             steps {
                 echo "Running tests on env=${params.ENV}, browser=${params.BROWSER}, headless=${params.HEADLESS}, groups=${params.GROUPS}..."
                 sh """
-                    export PLAYWRIGHT_BROWSERS_PATH="\$HOME/ms-playwright"
+                    export PLAYWRIGHT_BROWSERS_PATH="\$HOME/Library/Caches/ms-playwright"
                     mvn test \
                         -Denv=${params.ENV} \
                         -Dbrowser=${params.BROWSER} \
@@ -175,4 +142,3 @@ pipeline {
         }
     }
 }
-
