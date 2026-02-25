@@ -69,15 +69,33 @@ pipeline {
 
         stage('Install Playwright OS Dependencies') {
             steps {
-                echo "Installing Playwright system-level OS dependencies..."
-                // 'install-deps' installs the native OS libraries (libnss3, libglib2.0, etc.)
-                // that the browser binaries require.  sudo is needed on Linux agents;
-                // on macOS the step is a no-op so it is safe to run unconditionally.
+                echo "Installing Playwright system-level OS dependencies via apt-get..."
+                // Playwright's built-in 'install-deps' internally calls 'su' which fails in
+                // Docker containers where the jenkins user is not root.
+                // Instead, we install the required native libraries directly with apt-get.
+                // The Jenkins Docker image already runs as root, so no sudo is needed.
                 sh """
-                    mvn exec:java \
-                        -e \
-                        -Dexec.mainClass=com.microsoft.playwright.CLI \
-                        -Dexec.args="install-deps ${params.BROWSER}"
+                    apt-get update -qq && apt-get install -y --no-install-recommends \
+                        libnss3 \
+                        libnspr4 \
+                        libatk1.0-0 \
+                        libatk-bridge2.0-0 \
+                        libcups2 \
+                        libdrm2 \
+                        libdbus-1-3 \
+                        libxkbcommon0 \
+                        libxcomposite1 \
+                        libxdamage1 \
+                        libxfixes3 \
+                        libxrandr2 \
+                        libgbm1 \
+                        libasound2 \
+                        libpango-1.0-0 \
+                        libcairo2 \
+                        libxshmfence1 \
+                        fonts-liberation \
+                        libvulkan1 \
+                        xdg-utils
                 """
             }
         }
