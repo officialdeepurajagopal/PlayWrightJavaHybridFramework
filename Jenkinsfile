@@ -74,7 +74,7 @@ pipeline {
                 // that the browser binaries require.  sudo is needed on Linux agents;
                 // on macOS the step is a no-op so it is safe to run unconditionally.
                 sh """
-                    sudo mvn exec:java \
+                    mvn exec:java \
                         -e \
                         -Dexec.mainClass=com.microsoft.playwright.CLI \
                         -Dexec.args="install-deps ${params.BROWSER}"
