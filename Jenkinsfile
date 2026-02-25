@@ -69,14 +69,13 @@ pipeline {
 
         stage('Install Playwright Browsers') {
             steps {
-                echo "Installing Playwright browser binaries and OS dependencies..."
-                // Downloads the browser selected as a parameter (plus its system deps).
-                // On a fresh Linux agent this installs libwoff, gstreamer, etc. automatically.
+                echo "Installing Playwright browser binaries..."
+                // --with-deps requires root on Linux; skip it on macOS (deps are pre-installed).
                 sh """
                     mvn exec:java \
                         -e \
                         -Dexec.mainClass=com.microsoft.playwright.CLI \
-                        -Dexec.args="install --with-deps ${params.BROWSER}"
+                        -Dexec.args="install ${params.BROWSER}"
                 """
             }
         }
