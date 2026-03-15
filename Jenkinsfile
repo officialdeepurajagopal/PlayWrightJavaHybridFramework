@@ -6,7 +6,7 @@ pipeline {
     // Manage Jenkins → Tools with these exact names)
     // ──────────────────────────────────────────────
     tools {
-        jdk   'JDK-17'
+        jdk   'JDK-21'
         maven 'Maven-3.9'
     }
 
