@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
 <suite name="PlaywrightHybridSuite" parallel="tests" thread-count="2">
+
+    <!-- Explicitly register AllureTestNg so it isn't missed by SPI in Surefire's forked JVM -->
+    <listeners>
+        <listener class-name="io.qameta.allure.testng.AllureTestNg"/>
+    </listeners>
+
     <test name="All Tests">
         <packages>
             <package name="org.example.tests.*"/>

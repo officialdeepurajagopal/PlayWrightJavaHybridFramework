@@ -18,6 +18,8 @@
         <browser>chromium</browser>
         <slowMo>1000</slowMo>
         <groups>uitest,apitest</groups>
+        <!-- AspectJ version for Allure instrumentation -->
+        <aspectj.version>1.9.21</aspectj.version>
     </properties>
 
     <dependencies>
@@ -58,6 +60,13 @@
             <version>RELEASE</version>
             <scope>provided</scope>
         </dependency>
+        <!-- AspectJ weaver – required for Allure @Step / @Attachment instrumentation -->
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjweaver</artifactId>
+            <version>${aspectj.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
@@ -71,11 +80,17 @@
                         <suiteXmlFile>src/test/resources/testng.xml</suiteXmlFile>
                     </suiteXmlFiles>
                     <groups>${groups}</groups>
+                    <!-- AspectJ weaver agent – required for Allure to capture @Step / @Attachment -->
+                    <argLine>
+                        -javaagent:"${settings.localRepository}/org/aspectj/aspectjweaver/${aspectj.version}/aspectjweaver-${aspectj.version}.jar"
+                    </argLine>
                     <systemPropertyVariables>
                         <env>${env}</env>
                         <headless>${headless}</headless>
                         <browser>${browser}</browser>
                         <slowMo>${slowMo}</slowMo>
+                        <!-- Write results under target/ so mvn clean wipes them between builds -->
+                        <allure.results.directory>${project.build.directory}/allure-results</allure.results.directory>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>

@@ -41,7 +41,7 @@ pipeline {
     // Pipeline-level environment variables
     // ──────────────────────────────────────────────
     environment {
-        ALLURE_RESULTS_DIR       = 'allure-results'
+        ALLURE_RESULTS_DIR = 'target/allure-results'
     }
 
     // ──────────────────────────────────────────────
@@ -104,21 +104,19 @@ pipeline {
     // ──────────────────────────────────────────────
     post {
         always {
-            node(null) {
-                echo "Archiving test artifacts..."
+            echo "Archiving test artifacts..."
 
-                // Archive raw Allure results and Surefire XML reports
-                archiveArtifacts artifacts: 'allure-results/**', allowEmptyArchive: true
-                archiveArtifacts artifacts: 'target/surefire-reports/**', allowEmptyArchive: true
+            // Archive raw Allure results and Surefire XML reports
+            archiveArtifacts artifacts: 'target/allure-results/**', allowEmptyArchive: true
+            archiveArtifacts artifacts: 'target/surefire-reports/**', allowEmptyArchive: true
 
-                // Generate and publish the Allure HTML report
-                // Requires the "Allure Jenkins Plugin" to be installed
-                allure([
-                    includeProperties: false,
-                    jdk              : '',
-                    results          : [[path: "${ALLURE_RESULTS_DIR}"]]
-                ])
-            }
+            // Generate and publish the Allure HTML report
+            // Requires the "Allure Jenkins Plugin" to be installed
+            allure([
+                includeProperties: false,
+                jdk              : '',
+                results          : [[path: "${ALLURE_RESULTS_DIR}"]]
+            ])
         }
 
         success {
