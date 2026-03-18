@@ -69,12 +69,9 @@ pipeline {
 
         stage('Install Playwright Browsers') {
             steps {
-                echo "Verifying Playwright browser binaries..."
-                // Use $HOME from the Jenkins shell environment to locate the macOS browser cache.
-                // This avoids hardcoded paths and permission errors.
+                echo "Installing Playwright browser binaries..."
+                // Install the browser binaries (uses the default OS cache location)
                 sh """
-                    export PLAYWRIGHT_BROWSERS_PATH="\$HOME/Library/Caches/ms-playwright"
-                    echo "PLAYWRIGHT_BROWSERS_PATH=\$PLAYWRIGHT_BROWSERS_PATH"
                     mvn exec:java \
                         -e \
                         -Dexec.mainClass=com.microsoft.playwright.CLI \
@@ -83,11 +80,29 @@ pipeline {
             }
         }
 
+        stage('Install Playwright System Dependencies') {
+            steps {
+                echo "Installing OS-level system dependencies required by Playwright browsers..."
+                // 'install-deps' uses apt-get and is Linux-only.
+                // macOS already ships with the required system libraries, so we skip it there.
+                sh """
+                    if [ "\$(uname)" = "Linux" ]; then
+                        echo "Linux detected — running install-deps to install system libraries..."
+                        sudo mvn exec:java \
+                            -e \
+                            -Dexec.mainClass=com.microsoft.playwright.CLI \
+                            -Dexec.args="install-deps ${params.BROWSER}"
+                    else
+                        echo "macOS detected — skipping install-deps (system libraries are pre-installed by the OS)."
+                    fi
+                """
+            }
+        }
+
         stage('Test') {
             steps {
                 echo "Running tests on env=${params.ENV}, browser=${params.BROWSER}, headless=${params.HEADLESS}, groups=${params.GROUPS}..."
                 sh """
-                    export PLAYWRIGHT_BROWSERS_PATH="\$HOME/Library/Caches/ms-playwright"
                     mvn test \
                         -Denv=${params.ENV} \
                         -Dbrowser=${params.BROWSER} \
