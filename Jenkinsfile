@@ -88,7 +88,7 @@ pipeline {
                 sh """
                     if [ "\$(uname)" = "Linux" ]; then
                         echo "Linux detected — running install-deps to install system libraries..."
-                        sudo mvn exec:java \
+                        mvn exec:java \
                             -e \
                             -Dexec.mainClass=com.microsoft.playwright.CLI \
                             -Dexec.args="install-deps ${params.BROWSER}"
