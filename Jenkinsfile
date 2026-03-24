@@ -83,15 +83,49 @@ pipeline {
         stage('Install Playwright System Dependencies') {
             steps {
                 echo "Installing OS-level system dependencies required by Playwright browsers..."
-                // 'install-deps' uses apt-get and is Linux-only.
+                // 'install-deps' uses apt-get internally and requires root privileges.
                 // macOS already ships with the required system libraries, so we skip it there.
+                // When running inside a Docker/Linux Jenkins agent we first try the Playwright
+                // CLI (with sudo), then fall back to a direct apt-get install of the exact
+                // packages reported by Playwright's host-validation warning.
                 sh """
                     if [ "\$(uname)" = "Linux" ]; then
-                        echo "Linux detected — running install-deps to install system libraries..."
-                        mvn exec:java \
-                            -e \
-                            -Dexec.mainClass=com.microsoft.playwright.CLI \
-                            -Dexec.args="install-deps ${params.BROWSER}"
+                        echo "Linux detected — installing Playwright system dependencies..."
+
+                        # Refresh package lists first so apt can resolve every package name
+                        sudo apt-get update -y || true
+
+                        # Preferred path: let Playwright resolve the full dependency list itself
+                        if sudo mvn exec:java \
+                                -e \
+                                -Dexec.mainClass=com.microsoft.playwright.CLI \
+                                -Dexec.args="install-deps ${params.BROWSER}" ; then
+                            echo "install-deps succeeded via Playwright CLI."
+                        else
+                            echo "Playwright CLI install-deps failed; falling back to manual apt-get install..."
+                            sudo apt-get install -y \
+                                libglib2.0-0 \
+                                libnss3 \
+                                libnspr4 \
+                                libdbus-1-3 \
+                                libatk1.0-0 \
+                                libatk-bridge2.0-0 \
+                                libcups2 \
+                                libdrm2 \
+                                libxcb1 \
+                                libxkbcommon0 \
+                                libx11-6 \
+                                libxcomposite1 \
+                                libxdamage1 \
+                                libxext6 \
+                                libxfixes3 \
+                                libxrandr2 \
+                                libgbm1 \
+                                libpango-1.0-0 \
+                                libcairo2 \
+                                libasound2 \
+                                libatspi2.0-0
+                        fi
                     else
                         echo "macOS detected — skipping install-deps (system libraries are pre-installed by the OS)."
                     fi

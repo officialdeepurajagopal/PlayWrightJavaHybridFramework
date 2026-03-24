@@ -13,10 +13,15 @@ public class UITest extends BaseTest {
     private RegistrationPage registrationPage;
     private HomePage homePage;
 
-    @Test(groups = {"uitest"})
-    public void loginTest() {
+    @BeforeMethod(alwaysRun = true)
+    public void initPages() {
         loginPage = new LoginPage(page);
         homePage = new HomePage(page);
+        registrationPage = new RegistrationPage(page);
+    }
+
+    @Test(groups = {"uitest"})
+    public void loginTest() {
         loginPage.navigateTo(urlToLaunch);
         loginPage.enterCredentials("officialdeepurajagopal@gmail.com", "Alliswell@2026");
         loginPage.clickLoginButton();
@@ -26,10 +31,8 @@ public class UITest extends BaseTest {
 
     @Test(groups = {"uitest"})
     public void testRegistration() {
-        loginPage = new LoginPage(page);
         loginPage.navigateTo(urlToLaunch);
         loginPage.clickRegisterLink();
-        registrationPage = new RegistrationPage(page);
         registrationPage.enterRegistrationDetails(Utils.generateRegistrationData());
         registrationPage.clickAgeCheckbox();
         registrationPage.clickRegisterButton();

@@ -15,31 +15,43 @@ public class LoginPage extends BasePage {
         this.page = page;
     }
 
-    public ElementHandle inputUserName(String locator){
-        return getElement("#email");
+    private static ElementHandle inputUserName(){
+        return page.querySelector("#userEmail");
     }
 
-    public ElementHandle inputPassword(String locator){
-        return getElement("#password");
+    public static ElementHandle inputPassword(){
+        return page.querySelector("#userPassword");
+    }
+
+    public ElementHandle loginButton(){
+        return page.querySelector("#login");
+    }
+
+    public ElementHandle registerHereButton(){
+        return page.querySelector("//a[contains(text(),'Register here')]");
+    }
+
+    public ElementHandle signOutButton(){
+        return page.querySelector("//button[contains(text(), 'Sign Out')]");
     }
 
     public void enterCredentials(String username, String password){
-        typeText("#userEmail", username);
-        typeText("#userPassword", password);
+        typeText(inputUserName(), username);
+        typeText(inputPassword(), password);
     }
 
     public void clickLoginButton(){
-        clickElement("#login");
+        clickElement(loginButton());
         log.info("Clicked on login button");
     }
 
     public void clickRegisterLink(){
-        clickElement("//a[contains(text(),'Register here')]");
+        clickElement(registerHereButton());
         log.info("Clicked on register link");
     }
 
     public boolean isLoginSuccessful(){
-        return validateElementVisible("//button[contains(text(), 'Sign Out')]");
+        return validateElementVisible(signOutButton());
     }
 
 }

@@ -14,21 +14,16 @@ public class BasePage {
         page.navigate(url);
     }
 
-    public static ElementHandle getElement(String locator) {
-        return page.querySelector(locator);
+    public static void clickElement(ElementHandle locator) {
+        locator.click();
     }
 
-    public static void clickElement(String locator) {
-        getElement(locator).click();
+    public static void typeText(ElementHandle locator, String text) {
+        locator.fill(text);
     }
 
-    public static void typeText(String locator, String text) {
-        getElement(locator).fill(text);
-    }
-
-    public static boolean validateElementVisible(String locator) {
-        page.waitForSelector(locator);
-        return getElement(locator).isVisible();
+    public static boolean validateElementVisible(ElementHandle locator) {
+        return locator.isVisible();
     }
 
 }
